@@ -26,6 +26,7 @@
 
 // GoGetter is a simple application I use to load the necessary libraries that my
 // projects require
+
 package main
 
 import (
