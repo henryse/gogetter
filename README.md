@@ -5,6 +5,10 @@ This is a simple application I use to install all of the go libraries I need for
     go build gogetter.go
     go install
     
+    OR
+    
+    make install
+
 The command line parameters are as follows:
 
       --help string

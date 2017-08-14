@@ -35,46 +35,46 @@ import (
 	"log"
 	"bufio"
 	"os/exec"
+	"fmt"
 )
 
 func main() {
 
 	var librariesLocation string
 
-	log.Println("Go Getter Version 1.0")
-
 	flag.StringVar(&librariesLocation, "libraries", "", "Directory location of the libraries.txt file OR the libraries file to use.")
-	flag.StringVar(&librariesLocation, "help", "", "Show this help")
+	boolPtr := flag.Bool("version", false, "a bool")
 	flag.Parse()
 
-//	log.Printf("Arg[0] = %s", os.Args[0])
-//	log.Printf("Arg[1] = %s", os.Args[1])
-
-	// If no parameters simply look for the libraries.txt file in the gogetter's directory
-	if len(librariesLocation) == 0 {
-		librariesLocation = path.Join(path.Dir(os.Args[0]), "libraries.txt")
+	if *boolPtr == true{
+		fmt.Println("Go Getter Version 1.0")
 	} else {
-		// ok, if they just passed in a directory, then assume the file name is libraries.txt
-		if IsDirectory(librariesLocation){
-			librariesLocation = path.Join(librariesLocation, "libraries.txt")
+		// If no parameters simply look for the libraries.txt file in the gogetter's directory
+		if len(librariesLocation) == 0 {
+			librariesLocation = path.Join(path.Dir(os.Args[0]), "libraries.txt")
+		} else {
+			// ok, if they just passed in a directory, then assume the file name is libraries.txt
+			if IsDirectory(librariesLocation){
+				librariesLocation = path.Join(librariesLocation, "libraries.txt")
+			}
 		}
-	}
 
-	log.Printf("Installing libraries from: '%s'\n", librariesLocation)
+		log.Printf("Installing libraries from: '%s'\n", librariesLocation)
 
-	file, err := os.Open(librariesLocation)
-	if err != nil {
-		log.Fatalf("Error: %s", err)
-	}
-	defer file.Close()
+		file, err := os.Open(librariesLocation)
+		if err != nil {
+			log.Fatalf("Error: %s", err)
+		}
+		defer file.Close()
 
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		GoGet(scanner.Text())
-	}
+		scanner := bufio.NewScanner(file)
+		for scanner.Scan() {
+			GoGet(scanner.Text())
+		}
 
-	if err := scanner.Err(); err != nil {
-		log.Fatal(err)
+		if err := scanner.Err(); err != nil {
+			log.Fatal(err)
+		}
 	}
 }
 
