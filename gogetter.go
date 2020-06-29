@@ -30,13 +30,13 @@
 package main
 
 import (
-	"flag"
-	"os"
-	"path"
-	"log"
 	"bufio"
-	"os/exec"
+	"flag"
 	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"path"
 )
 
 func main() {
@@ -47,7 +47,7 @@ func main() {
 	boolPtr := flag.Bool("version", false, "a bool")
 	flag.Parse()
 
-	if *boolPtr == true{
+	if *boolPtr == true {
 		fmt.Println("Go Getter Version 1.0")
 	} else {
 		// If no parameters simply look for the libraries.txt file in the gogetter's directory
@@ -55,7 +55,7 @@ func main() {
 			librariesLocation = path.Join(path.Dir(os.Args[0]), "libraries.txt")
 		} else {
 			// ok, if they just passed in a directory, then assume the file name is libraries.txt
-			if IsDirectory(librariesLocation){
+			if IsDirectory(librariesLocation) {
 				librariesLocation = path.Join(librariesLocation, "libraries.txt")
 			}
 		}
@@ -79,7 +79,7 @@ func main() {
 	}
 }
 
-func IsDirectory(path string) (bool) {
+func IsDirectory(path string) bool {
 	info, err := os.Stat(path)
 	if err == nil {
 		switch mode := info.Mode(); {
@@ -108,7 +108,7 @@ func GoGet(library string) {
 
 		output := string(stdout)
 
-		if len(output) >	 0 {
+		if len(output) > 0 {
 			log.Println(output)
 		}
 	}
