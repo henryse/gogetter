@@ -170,6 +170,8 @@ func WriteLibrariesFile(libraries string, imports []string) {
 	}
 
 	file, err := os.Create(libraries)
+	err = file.Truncate(0)
+	_, err = file.Seek(0, 0)
 
 	if err != nil {
 		log.Fatalf("[ERROR] Failed creating file: %s", err)
