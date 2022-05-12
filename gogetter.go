@@ -75,6 +75,10 @@ func main() {
 	log.Println("[INFO] update = ", *update)
 	log.Println("[INFO] install = ", *install)
 
+	if !Validate(sources, libraries, *update, *install) {
+		log.Println("[ERROR] Invalid Parameters.")
+	}
+
 	if *showVersion == true {
 		ShowVersion()
 	}
@@ -92,8 +96,22 @@ func main() {
 	}
 }
 
+func Validate(sources string, libraries string, update bool, install bool) bool {
+	if update && len(sources) == 0 && len(libraries) == 0 {
+		log.Println("[ERROR] --update requires both --sources and --libraries parameters")
+		return false
+	}
+
+	if install && len(libraries) == 0 {
+		log.Println("[ERROR] --install requires --libraries parameters")
+		return false
+	}
+
+	return true
+}
+
 func ShowVersion() {
-	fmt.Println("go-getter Version 20220510.1")
+	fmt.Println("[INFO] go-getter Version 20220510.1")
 }
 
 func ShowHelp() {
