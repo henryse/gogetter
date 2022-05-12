@@ -1,5 +1,5 @@
 // **********************************************************************
-//    Copyright (c) 2017 Henry Seurer
+//    Copyright (c) 2017-2022 Henry Seurer
 //
 //   Permission is hereby granted, free of charge, to any person
 //    obtaining a copy of this software and associated documentation
@@ -33,10 +33,16 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"go/parser"
+	"go/token"
+	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"path"
+	"path/filepath"
+	"regexp"
+	"strings"
 )
 
 func main() {
@@ -46,13 +52,28 @@ func main() {
 	var libraries string
 	var sources string
 
-	flag.StringVar(&libraries, "libraries", "", "Location of the libraries file")
+	flag.StringVar(&libraries, "libraries", "", "Location of the libraries.txt file")
 	flag.StringVar(&sources, "source", "", "Directory location of the go files to parse.")
 	update := flag.Bool("update", false, "Update libraries from sources")
 	install := flag.Bool("install", false, "GO GET libraries")
 	showVersion := flag.Bool("version", false, "Show version")
 	showHelp := flag.Bool("help", false, "Show Help")
 	flag.Parse()
+
+	// If no parameters simply look for the libraries.txt file in the gogetter's directory
+	if len(libraries) == 0 {
+		libraries = path.Join(path.Dir(os.Args[0]), "libraries.txt")
+	} else {
+		// ok, if they just passed in a directory, then assume the file name is libraries.txt
+		if IsDirectory(libraries) {
+			libraries = path.Join(libraries, "libraries.txt")
+		}
+	}
+
+	log.Println("[INFO] libraries = ", libraries)
+	log.Println("[INFO] sources = ", sources)
+	log.Println("[INFO] update = ", *update)
+	log.Println("[INFO] install = ", *install)
 
 	if *showVersion == true {
 		ShowVersion()
@@ -80,9 +101,84 @@ func ShowHelp() {
 }
 
 func UpdateLibraries(sources string, libraries string) {
+	log.Printf("[INFO] Updating library %s from source files at: %s\n", libraries, sources)
 
-	fmt.Println(sources)
-	fmt.Println(libraries)
+	_, err := os.Stat(sources)
+	if os.IsNotExist(err) {
+		log.Fatal("[ERROR] Folder does not exist.")
+		return
+	}
+
+	_, err = os.Stat(libraries)
+	if os.IsNotExist(err) {
+		log.Fatal("[ERROR] Folder does not exist.")
+		return
+	}
+
+	items, _ := ioutil.ReadDir(sources)
+	var imports []string
+
+	for _, item := range items {
+		if !item.IsDir() {
+			if strings.Compare(filepath.Ext(item.Name()), ".go") == 0 {
+				imports = append(imports, ParseFile(filepath.Join(sources, item.Name()))...)
+			}
+		}
+	}
+
+	if len(imports) > 0 {
+		WriteLibrariesFile(libraries, imports)
+	}
+}
+
+func WriteLibrariesFile(libraries string, imports []string) {
+	log.Printf("[INFO] Found imports, writing to %s\n", libraries)
+
+	_, err := os.Stat(libraries)
+	if os.IsNotExist(err) {
+		log.Fatal("[ERROR] Folder does not exist.")
+		return
+	}
+
+	file, err := os.OpenFile(libraries, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+
+	if err != nil {
+		log.Fatalf("[ERROR] Failed creating file: %s", err)
+	}
+
+	dataWriter := bufio.NewWriter(file)
+
+	for _, data := range imports {
+		_, _ = dataWriter.WriteString(data + "\n")
+	}
+
+	_ = dataWriter.Flush()
+	_ = file.Close()
+}
+
+func ParseFile(fileName string) []string {
+	var re = regexp.MustCompile(`^([a-z\d]+(-[a-z\d]+)*\.)+[a-z]{2,}$`)
+
+	tokenSet := token.NewFileSet()
+	parsed, err := parser.ParseFile(tokenSet, fileName, nil, parser.ImportsOnly)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var imports []string
+	for _, i := range parsed.Imports {
+		p := strings.Trim(i.Path.Value, `"`)
+		fmt.Print(p)
+
+		splits := strings.Split(p, "/")
+
+		for _, value := range splits {
+			for range re.FindAllString(value, -1) {
+				imports = append(imports, p)
+			}
+		}
+	}
+
+	return imports
 }
 
 func IsDirectory(path string) bool {
@@ -100,17 +196,7 @@ func IsDirectory(path string) bool {
 }
 
 func InstallLibraries(libraries string) {
-	// If no parameters simply look for the libraries.txt file in the gogetter's directory
-	if len(libraries) == 0 {
-		libraries = path.Join(path.Dir(os.Args[0]), "libraries.txt")
-	} else {
-		// ok, if they just passed in a directory, then assume the file name is libraries.txt
-		if IsDirectory(libraries) {
-			libraries = path.Join(libraries, "libraries.txt")
-		}
-	}
-
-	log.Printf("Installing libraries from: '%s'\n", libraries)
+	log.Printf("[INFO] Installing library %s/libraries.txt\n", libraries)
 
 	file, err := os.Open(libraries)
 	if err != nil {
@@ -128,7 +214,7 @@ func InstallLibraries(libraries string) {
 		library := scanner.Text()
 
 		if library[0] != '#' {
-			log.Printf("go get %s\n", library)
+			log.Printf("[INFO] go get %s\n", library)
 
 			cmd := exec.Command("go", "get", library)
 			stdout, err := cmd.Output()

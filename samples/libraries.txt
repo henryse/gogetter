@@ -1,2 +1,2 @@
-# This is a sample libraries file:
-github.com/google/uuid
+github.com/henryse/go-messages
+github.com/reiver/go-telnet
