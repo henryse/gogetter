@@ -76,7 +76,7 @@ func main() {
 	log.Println("[INFO] install = ", *install)
 
 	if !Validate(sources, libraries, *update, *install) {
-		log.Println("[ERROR] Invalid Parameters.")
+		log.Fatal("[ERROR] Invalid Parameters.")
 	}
 
 	if *showVersion == true {
@@ -97,14 +97,23 @@ func main() {
 }
 
 func Validate(sources string, libraries string, update bool, install bool) bool {
-	if update && len(sources) == 0 && len(libraries) == 0 {
-		log.Println("[ERROR] --update requires both --sources and --libraries parameters")
+	if !install && !update {
+		log.Println("[ERROR] Must specify --update, --install or both --update and --install")
 		return false
 	}
 
-	if install && len(libraries) == 0 {
-		log.Println("[ERROR] --install requires --libraries parameters")
-		return false
+	if update {
+		if len(sources) == 0 || len(libraries) == 0 {
+			log.Println("[ERROR] --update requires both --sources and --libraries parameters")
+			return false
+		}
+	}
+
+	if install {
+		if len(libraries) == 0 {
+			log.Println("[ERROR] --install requires --libraries parameters")
+			return false
+		}
 	}
 
 	return true
