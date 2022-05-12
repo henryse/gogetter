@@ -75,16 +75,18 @@ func main() {
 	log.Println("[INFO] update = ", *update)
 	log.Println("[INFO] install = ", *install)
 
-	if !Validate(sources, libraries, *update, *install) {
-		log.Fatal("[ERROR] Invalid Parameters.")
+	if *showHelp == true {
+		ShowHelp()
+		return
 	}
 
 	if *showVersion == true {
 		ShowVersion()
+		return
 	}
 
-	if *showHelp == true {
-		ShowHelp()
+	if !Validate(sources, libraries, *update, *install) {
+		log.Fatal("[ERROR] Invalid Parameters.")
 	}
 
 	if *update == true {
