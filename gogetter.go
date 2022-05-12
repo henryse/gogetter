@@ -122,7 +122,7 @@ func Validate(sources string, libraries string, update bool, install bool) bool 
 }
 
 func ShowVersion() {
-	log.Println("[INFO] go-getter Version 20220510.1")
+	log.Println("[INFO] go-getter Version 20220511.1")
 }
 
 func ShowHelp() {
@@ -169,7 +169,7 @@ func WriteLibrariesFile(libraries string, imports []string) {
 		return
 	}
 
-	file, err := os.OpenFile(libraries, os.O_TRUNC|os.O_CREATE|os.O_WRONLY, 0644)
+	file, err := os.Create(libraries)
 
 	if err != nil {
 		log.Fatalf("[ERROR] Failed creating file: %s", err)
