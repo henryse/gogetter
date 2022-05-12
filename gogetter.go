@@ -155,9 +155,23 @@ func UpdateLibraries(sources string, libraries string) {
 		}
 	}
 
+	imports = RemoveDuplicateStr(imports)
+
 	if len(imports) > 0 {
 		WriteLibrariesFile(libraries, imports)
 	}
+}
+
+func RemoveDuplicateStr(strSlice []string) []string {
+	allKeys := make(map[string]bool)
+	var list []string
+	for _, item := range strSlice {
+		if _, value := allKeys[item]; !value {
+			allKeys[item] = true
+			list = append(list, item)
+		}
+	}
+	return list
 }
 
 func WriteLibrariesFile(libraries string, imports []string) {
