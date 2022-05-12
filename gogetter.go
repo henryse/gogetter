@@ -122,7 +122,7 @@ func Validate(sources string, libraries string, update bool, install bool) bool 
 }
 
 func ShowVersion() {
-	fmt.Println("[INFO] go-getter Version 20220510.1")
+	log.Println("[INFO] go-getter Version 20220510.1")
 }
 
 func ShowHelp() {

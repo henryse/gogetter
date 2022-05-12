@@ -1,4 +1,4 @@
-module github.com/henryse/go-getter
+module github.com/henryse/gogetter
 
 go 1.18
 
