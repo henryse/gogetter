@@ -264,15 +264,15 @@ func InstallLibraries(libraries string) {
 			cmd := exec.Command("go", "get", library)
 			stdout, err := cmd.Output()
 
-			if err != nil {
-				log.Fatal(err.Error())
-				return
-			}
-
 			output := string(stdout)
 
 			if len(output) > 0 {
 				log.Println(output)
+			}
+
+			if err != nil {
+				log.Fatal(err.Error())
+				return
 			}
 		}
 	}
